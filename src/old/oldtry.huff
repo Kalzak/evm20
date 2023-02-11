@@ -14,8 +14,8 @@
 	msize 0x0 revert
 }
 
-#define macro returnWord() = takes(1) returns(0) {
-	msize mstore
+#define macro emptyReturn() = takes(0) returns(0) {
+	msize msize mstore
 	msize 0x0 revert
 }
 
@@ -61,22 +61,17 @@
 	dispatcher()
 
 	totalSupply:
-		0x1 returnWord();
 
 	balanceOf:
-		0x2 returnWord();
 
 	transfer:
-		0x3 returnWord();
 
 	allowance:
-		0x4 returnWord();
 
 	approve:
-		0x5 returnWord();
 
 	transferFrom:
-		0x6 returnWord();
+
 	
 }
 
