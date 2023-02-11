@@ -1,0 +1,163 @@
+/*
+ * EVM20: An optimized base ERC20 contract written in huff by @kalzakdev
+ *
+ * Functions:
+ *   totalSupply
+ *   balanceOf 
+ *   transfer
+ *   allowance
+ *   approve
+ *   transferFrom
+ *
+ * This does not have the extra ERC20Detailed functionalities:
+ *   name
+ *   symbols
+ *   decimals
+ * 
+ */
+
+/*
+
+0x18160ddd	totalSupply()(uint256)
+0x70a08231	balanceOf(address)(uint256)
+0xa9059cbb	transfer(address,uint256)(bool)
+0xdd62ed3e	allowance(address,address)(uint256)
+0x095ea7b3	approve(address,uint256)(bool)
+0x23b872dd	transferFrom(address,address,uint256)(bool)
+
+Approach: When calldataloading an address it loads a word (32 bytes)
+So an address from calldata will look like:
+  0xbe862ad9abfe6f22bcb087716c7d89a26051f74c000000000000000000000000
+But an address from caller opcode will look like:
+  0xbe862ad9abfe6f22bcb087716c7d89a26051f74c
+Transfer functions are used more, where you can have two address arguments
+So it's more efficient to convert the caller opcode return to be formatted like calldata
+So we should shl 0x60 times to make the caller similar to calldata address
+
+*/
+
+#define macro pushzero() = takes(0) returns(1) {
+	// This is guaranteed to return zero because we revert if value
+	callvalue
+}
+
+// takes address then amount
+#define macro checkenoughfunds() = takes(2) returns(0) {
+}
+
+// tak: address,amount
+// ret: take
+#define macro reducesender() = takes(2) returns(2) {
+	dup2
+	dup2
+	dup1
+	dup3
+	sload
+	sub
+	dup1
+	swap2
+	gt
+	continue
+	jumpi
+	invalid
+	continue:
+		swap1
+		sstore
+}
+
+// tak: address, amount
+// ret: take
+#define macro increaserecipient() = takes(2) returns(0) {
+	swap1
+	dup2
+	sload
+	add
+	swap1
+	sstore
+}
+
+#define macro getcaller() = takes(0) returns(1) {
+	caller 0x60 shl
+}
+
+// tak: word
+#define macro returnword() = takes(1) returns(0) {
+	pushzero() mstore
+	msize pushzero() return
+}
+
+// tak: address,amount
+#define macro reduceallowance() = takes(2) returns(0) {
+	dup1
+	dup3
+	// Check that allowance won't underflow
+	sload
+	sub
+	dup1
+	swap2
+	gt
+	continue
+	jumpi
+	invalid
+	continue:
+		swap1
+		sstore
+}
+
+#define macro MAIN() = takes(0) returns(0) {
+	// ERC20 has no payable functions so prevent calling with value
+	callvalue iszero dispatcher jumpi
+	invalid
+
+	dispatcher:
+
+		0x0 calldataload
+		0x3 byte
+		jump
+
+		// totalSupply
+		jumpdest
+		pushzero() sload
+		returnword()
+
+		// balanceOf
+		jumpdest
+		caller sload
+		returnword()
+
+		// transfer
+		jumpdest
+		0x24 calldataload // amount
+		getcaller()
+		reducesender()
+		0x04 calldataload // recipient
+		increaserecipient()
+		0x01
+		returnword()
+
+		// allowance
+		0x04 calldataload // authorized
+		0x01 and
+		sload
+		returnword()
+
+		// approve
+		0x01
+		0x24 calldataload // amount
+		0x04 calldataload // authorized
+		dup3
+		and
+		sstore
+		returnword()
+
+		// transferFrom
+		0x44 calldataload
+		dup1
+		caller
+		reduceallowance()
+		dup1
+		0x04 calldataload
+		reducesender()
+		0x24 calldataload
+		increaserecipient()
+}
