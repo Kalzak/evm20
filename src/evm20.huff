@@ -1,5 +1,7 @@
 /*
 
+Signature	Function
+
 0x18160ddd	totalSupply()(uint256)
 0x70a08231	balanceOf(address)(uint256)
 0xa9059cbb	transfer(address,uint256)(bool)
@@ -9,74 +11,203 @@
 
 */
 
-#define macro emptyRevert() = takes(0) returns(0) {
+#define macro CONSTRUCTOR() = takes(0) returns(0) {
+	// Mint 500 tokens to address 0x1111
+	0x1f4
+	0x1111
+	sstore
+	// Mint 500 tokens to address 0x2222
+	0x1f4
+	0x2222
+	sstore
+}
+
+#define macro MAIN() = takes(0) returns(0) {
+	// Use only one dispatcher
+	// Check the README for more info
+	full_dispatcher()
+	//micro_dispatcher()
+
+	totalSupply:
+	totalSupply()
+
+	balanceOf:
+	balanceOf()
+
+	transfer:
+	transfer()
+
+	allowance:
+	allowance()
+
+	approve:
+	approve()
+
+	transferFrom:
+	transferFrom()
+
+	revert_memfree:
 	msize msize mstore
 	msize 0x0 revert
 }
 
-#define macro returnWord() = takes(1) returns(0) {
-	msize mstore
-	msize 0x0 revert
+#define macro micro_dispatcher() = takes(0) returns(0) {
+	msize calldataload
+	0xe0 shr
+	jump
 }
 
-#define macro dispatcher() = takes(0) returns(1) {
+#define macro full_dispatcher() = takes(0) returns(0) {
 
 	msize calldataload
 	0xe0 shr
-
-	dup1
 	0x18160ddd eq	// totalSupply
 	totalSupply
 	jumpi
 
-	dup1
+	msize calldataload
+	0xe0 shr
 	0x70a08231 eq	// balanceOf
 	balanceOf
 	jumpi
 
-	dup1
+	msize calldataload
+	0xe0 shr
 	0xa9059cbb eq	// transfer
 	transfer
 	jumpi
 
-	dup1
+	msize calldataload
+	0xe0 shr
 	0xdd62ed3e eq	// allowance
 	allowance
 	jumpi
 
-	dup1
+	msize calldataload
+	0xe0 shr
 	0x095ea7b3 eq	// approve
 	approve
 	jumpi
 
-	dup1
+	msize calldataload
+	0xe0 shr
 	0x23b872dd eq	// transferFrom
 	transferFrom
 	jumpi
 
-	emptyRevert()   // no function selector matched
+	invalid
 }
 
-#define macro MAIN() = takes(0) returns(0) {
-	dispatcher()
-
-	totalSupply:
-		0x1 returnWord();
-
-	balanceOf:
-		0x2 returnWord();
-
-	transfer:
-		0x3 returnWord();
-
-	allowance:
-		0x4 returnWord();
-
-	approve:
-		0x5 returnWord();
-
-	transferFrom:
-		0x6 returnWord();
-	
+#define macro totalSupply() = takes(0) returns(0) {
+	0x3e8 msize mstore 	//
+	msize 0x0 return	//
 }
 
+#define macro balanceOf() = takes(0) returns(0) {
+	0x4 calldataload	// addresskey
+	sload			// balance
+	msize mstore		//
+	msize 0x0 return	//
+}	
+
+#define macro allowance() = takes(0) returns(0) {
+	0x24 calldataload	// approvee
+	0x4 calldataload	// approver approvee
+	msize mstore		// approvee
+	msize mstore		//
+	msize 0x0 sha3		// approvalkey
+	sload			// approveamount
+	msize mstore		//
+	0x20 0x40 return	//
+}
+
+#define macro approve() = takes(0) returns(0) {
+	0x24 calldataload	// approveamount
+	0x4 calldataload	// approvee approveamount
+	caller			// approver approvee approveamount
+	msize mstore		// approvee approveamount
+	msize mstore		// approveamount
+	msize 0x0 sha3		// approvalkey approveamount
+	sstore			//
+	0x1 msize mstore	//
+	0x20 0x40 return	//
+}
+
+#define macro transfer() = takes(0) returns(0) {
+	0x4 calldataload	// recipient
+	0x24 calldataload	// amount recipient
+	caller sload		// senderbalance amount recipient
+	dup2			// amount senderbalance amount recipient
+	dup2			// senderbalance amount senderbalance amount recipient
+	sub			// senderbalanceafter senderbalance amount recipient
+	swap1			// senderbalance senderbalanceafter amount recipient
+	dup2			// senderbalanceafter senderbalance senderbalanceafter amount recipient
+	gt			// notenoughbalance senderbalanceafter amount recipient
+	revert_memfree		// revertjump notenoughbalance senderbalanceafter amount recipient
+	jumpi			// senderbalanceafter amount recipient
+	caller sstore		// amount recipient
+	dup2			// recipient amount recipient
+	sload			// recipientbalanace amount recipient
+	add			// newrecipientbalance recipient
+	swap1			// recipient newrecipientbalance
+	sstore			//
+	0x1 msize mstore	//
+	msize 0x0 return	//
+}
+
+#define macro transferFrom() = takes(0) returns(0) {
+	0x4 calldataload	// sender
+	0x44 calldataload	// amount sender
+	dup2			// sender amount sender
+	caller			// caller sender amount sender
+	eq			// callerissender amount sender
+	skip_allowance		// skipjump callerissender amount sender
+	jumpi			// amount sender
+	caller			// caller amount sender
+	dup3			// sender caller amount sender
+	msize mstore		// sender amount sender
+	msize mstore		// amount sender
+	msize 0x0 sha3		// allowancekey amount sender
+	dup1			// allowancekey allowancekey amount sender
+	sload			// allowance allowancekey amount sender
+	dup3			// amount allowance allowancekey amount sender
+	dup2			// allowance amount allowance allowancekey amount sender
+	sub			// allowanceafter allowance allowancekey amount sender
+	swap1			// allowance allowanceafter allowancekey amount sender
+	dup2			// allowanceafter allowance allowanceafter allowancekey amount sender
+	lt			// enoughallowance allowanceafter allowancekey amount sender
+	enough_allowance	// enoughallowancejump enoughallowance allowanceafter allowancekey amount sender
+	jumpi			// allowanceafter allowancekey amount sender
+	0x0 msize mstore	// allowanceafter allowancekey amount sender
+	0x20 0x40 revert	// allowanceafter allowancekey amount sender
+	enough_allowance:
+	swap1			// allowancekey allowanceafter amount sender
+	sstore			// amount sender
+	skip_allowance:
+	dup2			// sender amount sender
+	sload			// senderbalance amount sender
+	dup2			// amount senderbalance amount sender
+	dup2			// senderbalance amount senderbalance amount sender
+	sub			// newsenderbalance senderbalance amount sender
+	swap1			// senderbalance newsenderbalance amount sender
+	dup2			// newsenderbalance senderbalance newsenderbalance amount sender
+	lt			// enoughbalance newsenderbalance amount sender
+	enough_balance		// enoughbalancejump enoughbalance newsenderbalance amount sender
+	jumpi			// newsenderbalance amount sender
+	0x0 msize mstore	// newsenderbalance amount sender
+	0x20 0x40 revert	// newsenderbalance amount sender
+	enough_balance:
+	swap1			// amount newsenderbalance sender
+	swap2			// sender newsenderbalance amount
+	sstore			// amount
+	0x24 calldataload	// recipient amount 
+	dup1			// recipient recipient amount
+	sload			// recipientbalance recipient amount
+	swap1			// recipient recipientbalance amount
+	swap2			// amount recipientbalance recipient
+	add			// newrecipientbalance recipient
+	swap1			// recipient newrecipientbalance
+	sstore			//
+	0x1 msize mstore	//
+	0x20 0x40 return	//
+}
