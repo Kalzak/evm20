@@ -113,4 +113,75 @@ contract CounterTest is Test {
         uint256 balanceAfter = evm20.balanceOf(owner);
         assertEq(balanceBefore, balanceAfter + amount);
     }
+
+    function testTransferFromIncreasesBalance(address recipient, uint256 amount) public {
+        vm.assume(recipient != owner);
+        uint256 balanceBefore = evm20.balanceOf(recipient);
+        vm.prank(owner);
+	evm20.transferFrom(owner, recipient, amount);
+        uint256 balanceAfter = evm20.balanceOf(recipient);
+        assertEq(balanceBefore + amount, balanceAfter);
+    }
+
+    function testTransferFromEntireBalance(address sender, address recipient, uint256 amount) public {
+        vm.assume(sender != owner);
+	vm.assume(recipient != owner);
+	vm.assume(sender != recipient);
+
+	vm.prank(owner);
+	evm20.transfer(sender, amount);
+	vm.prank(sender);
+	evm20.transferFrom(sender, recipient, amount);
+	uint256 balance = evm20.balanceOf(sender);
+	assertEq(balance, 0);
+    }
+
+    function testTransferFromSelf(address sender, address recipient, uint256 startAmount, uint256 transferAmount) public {
+        vm.assume(startAmount >= transferAmount);
+	vm.assume(sender != owner);
+
+	vm.prank(owner);
+	evm20.transfer(sender, startAmount);
+	uint256 balanceBefore = evm20.balanceOf(sender);
+	vm.prank(sender);
+	evm20.transferFrom(sender, sender, transferAmount);
+	uint256 balanceAfter = evm20.balanceOf(sender);
+	assertEq(balanceBefore, balanceAfter);
+    }
+
+    function testFailTransferFromMoreThanBalance(address sender, address recipient, uint256 startAmount, uint256 transferAmount) public {
+        vm.assume(sender != owner);
+	vm.assume(recipient != owner);
+        vm.assume(transferAmount > startAmount);
+
+        vm.prank(owner);
+	evm20.transfer(sender, startAmount);
+	vm.prank(sender);
+	evm20.transferFrom(sender, recipient, transferAmount);
+    }
+
+    function testTransferFromReducesApproval(address spender, address recipient, uint256 allowance, uint256 amount) public {
+        vm.assume(spender != owner);
+	vm.assume(recipient != owner);
+	vm.assume(allowance >= amount);
+	
+	vm.prank(owner);
+	evm20.approve(spender, allowance);
+	uint256 allowanceBefore = evm20.allowance(owner, spender);
+        vm.prank(spender);
+	evm20.transferFrom(owner, recipient, amount);
+	uint256 allowanceAfter = evm20.allowance(owner, spender);
+	assertEq(allowanceBefore - amount, allowanceAfter);
+    }
+
+    function testFailTransferFromMoreThanAllowance(address spender, address recipient, uint256 allowance, uint256 amount) public {
+        vm.assume(spender != owner);
+	vm.assume(recipient != owner);
+	vm.assume(allowance < amount);
+	
+	vm.prank(owner);
+	evm20.approve(spender, allowance);
+        vm.prank(spender);
+	evm20.transferFrom(owner, recipient, amount);
+    }
 }
