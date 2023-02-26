@@ -11,14 +11,11 @@ Signature	Function
 
 */
 
+#define constant TOTAL_SUPPLY = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+
 #define macro CONSTRUCTOR() = takes(0) returns(0) {
-	// Mint 500 tokens to address 0x1111
-	0x1f4
-	0x1111
-	sstore
-	// Mint 500 tokens to address 0x2222
-	0x1f4
-	0x2222
+	[TOTAL_SUPPLY]
+	caller
 	sstore
 }
 
@@ -99,8 +96,8 @@ Signature	Function
 }
 
 #define macro totalSupply() = takes(0) returns(0) {
-	0x3e8 msize mstore 	//
-	msize 0x0 return	//
+	[TOTAL_SUPPLY] msize mstore 	//
+	msize 0x0 return		//
 }
 
 #define macro balanceOf() = takes(0) returns(0) {
@@ -189,10 +186,11 @@ Signature	Function
 	dup2			// amount senderbalance amount sender
 	dup2			// senderbalance amount senderbalance amount sender
 	sub			// newsenderbalance senderbalance amount sender
-	swap1			// senderbalance newsenderbalance amount sender
-	dup2			// newsenderbalance senderbalance newsenderbalance amount sender
-	lt			// enoughbalance newsenderbalance amount sender
-	enough_balance		// enoughbalancejump enoughbalance newsenderbalance amount sender
+	dup1			// newsenderbalance newsenderbalance senderbalance amount sender
+	swap2			// senderbalance newsenderbalance newsenderbalance amount sender
+	lt			// isoverflow newsenderbalance amount sender
+	not			// isnotoverflow newsenderbalance amount sender
+	enough_balance		// enoughbalancejump isnotoverflow newsenderbalance amount sender
 	jumpi			// newsenderbalance amount sender
 	0x0 msize mstore	// newsenderbalance amount sender
 	0x20 0x40 revert	// newsenderbalance amount sender
