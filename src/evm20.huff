@@ -170,13 +170,15 @@ Signature	Function
 	dup3			// amount allowance allowancekey amount sender
 	dup2			// allowance amount allowance allowancekey amount sender
 	sub			// allowanceafter allowance allowancekey amount sender
-	swap1			// allowance allowanceafter allowancekey amount sender
-	dup2			// allowanceafter allowance allowanceafter allowancekey amount sender
-	lt			// enoughallowance allowanceafter allowancekey amount sender
-	enough_allowance	// enoughallowancejump enoughallowance allowanceafter allowancekey amount sender
+	dup1			// allowanceafter allowanceafter allowance allowancekey amount sender
+	swap2			// allowance allowanceafter allowanceafter alloawncekey amount sender
+	swap1			// allowanceafter allowance allowanceafter allowancekey amount sender
+	gt			// isoverflow alloawnceafter allowancekey amount sender
+	iszero			// isnotoverflow allowanceafter allowancekey amount sender
+	enough_allowance	// enoughallowancejump isnotoverflow allowanceafter allowancekey amount sender
 	jumpi			// allowanceafter allowancekey amount sender
-	0x0 msize mstore	// allowanceafter allowancekey amount sender
-	0x20 0x40 revert	// allowanceafter allowancekey amount sender
+	0x1 0x0 mstore		// allowanceafter allowancekey amount sender
+	0x20 0x0 revert		// allowanceafter allowancekey amount sender
 	enough_allowance:
 	swap1			// allowancekey allowanceafter amount sender
 	sstore			// amount sender
@@ -192,8 +194,8 @@ Signature	Function
 	iszero			// isnotoverflow newsenderbalance amount sender
 	enough_balance		// enoughbalancejump isnotoverflow newsenderbalance amount sender
 	jumpi			// newsenderbalance amount sender
-	0x0 msize mstore	// newsenderbalance amount sender
-	0x20 0x40 revert	// newsenderbalance amount sender
+	0x0 0x0 mstore		// newsenderbalance amount sender
+	0x20 0x0 revert		// newsenderbalance amount sender
 	enough_balance:
 	swap1			// amount newsenderbalance sender
 	swap2			// sender newsenderbalance amount
