@@ -46,6 +46,7 @@ contract CounterTest is Test {
 
     function testTransferIncreasesBalance(address recipient, uint256 amount) public {
         vm.assume(recipient != owner);
+
 	uint256 balanceBefore = evm20.balanceOf(recipient);
         vm.prank(owner);
 	require(evm20.transfer(recipient, amount));
@@ -108,6 +109,8 @@ contract CounterTest is Test {
     }
 
     function testTransferFromReducesBalance(address recipient, uint256 amount) public {
+        vm.assume(recipient != owner);
+
         uint256 balanceBefore = evm20.balanceOf(owner);
         vm.prank(owner);
 	require(evm20.transferFrom(owner, recipient, amount));
@@ -117,6 +120,7 @@ contract CounterTest is Test {
 
     function testTransferFromIncreasesBalance(address recipient, uint256 amount) public {
         vm.assume(recipient != owner);
+
         uint256 balanceBefore = evm20.balanceOf(recipient);
         vm.prank(owner);
 	require(evm20.transferFrom(owner, recipient, amount));
