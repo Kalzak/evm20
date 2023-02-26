@@ -12,7 +12,7 @@ The full dispatcher is compatible with the standard ERC20 function selectors all
 
 The micro dispatcher is designed for maximum gas savings. Instead of passing a function signature in the first 4 bytes of calldata, you pass the `jumpdest` location for the desired function. This way it can immediately jump to the function and execute rather than spend gas processing a full ERC20 function signature. The jumpdests for each function are listed below. A security note for this dispatcher is that it will work for any valid jumpdest, not just where the "functions" start. This is highly experimental, use at your own risk. Note that the jumpdest locations for the micro dispatcher will depend on the constant total supply chosen. The total supply is currently 32 bytes in size, and a smaller total supply will affect the jumpdests.
 
-You can only have one dispatcher, go to the `MAIN` macro and comment out the one that you don't want to use. By default the `full_dispather` is used.
+You can only have one dispatcher, go to the `MAIN` macro and comment out the one that you don't want to use. By default the `full_dispatcher` is used.
 
 ## Function jumpdests
 
