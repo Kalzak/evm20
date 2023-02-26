@@ -189,7 +189,7 @@ Signature	Function
 	dup1			// newsenderbalance newsenderbalance senderbalance amount sender
 	swap2			// senderbalance newsenderbalance newsenderbalance amount sender
 	lt			// isoverflow newsenderbalance amount sender
-	not			// isnotoverflow newsenderbalance amount sender
+	iszero			// isnotoverflow newsenderbalance amount sender
 	enough_balance		// enoughbalancejump isnotoverflow newsenderbalance amount sender
 	jumpi			// newsenderbalance amount sender
 	0x0 msize mstore	// newsenderbalance amount sender
