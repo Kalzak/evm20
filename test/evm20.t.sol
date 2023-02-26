@@ -48,7 +48,7 @@ contract CounterTest is Test {
         vm.assume(recipient != owner);
 	uint256 balanceBefore = evm20.balanceOf(recipient);
         vm.prank(owner);
-	evm20.transfer(recipient, amount);
+	require(evm20.transfer(recipient, amount));
 	uint256 balanceAfter = evm20.balanceOf(recipient);
 	assertEq(balanceBefore, balanceAfter - amount);
     }
@@ -59,9 +59,9 @@ contract CounterTest is Test {
 	vm.assume(sender != recipient);
 
 	vm.prank(owner);
-	evm20.transfer(sender, amount);
+	require(evm20.transfer(sender, amount));
 	vm.prank(sender);
-	evm20.transfer(recipient, amount);
+	require(evm20.transfer(recipient, amount));
 	uint256 balance = evm20.balanceOf(sender);
 	assertEq(balance, 0);
     }
@@ -71,10 +71,10 @@ contract CounterTest is Test {
 	vm.assume(sender != owner);
 
 	vm.prank(owner);
-	evm20.transfer(sender, startAmount);
+	require(evm20.transfer(sender, startAmount));
 	uint256 balanceBefore = evm20.balanceOf(sender);
 	vm.prank(sender);
-	evm20.transfer(sender, transferAmount);
+	require(evm20.transfer(sender, transferAmount));
 	uint256 balanceAfter = evm20.balanceOf(sender);
 	assertEq(balanceBefore, balanceAfter);
     }
@@ -85,23 +85,24 @@ contract CounterTest is Test {
         vm.assume(transferAmount > startAmount);
 
 	vm.prank(owner);
-	evm20.transfer(sender, startAmount);
+	require(evm20.transfer(sender, startAmount));
 	vm.prank(sender);
+	// No require to ensure that the actual function call reverts, rather than just an incorrect return
 	evm20.transfer(recipient, transferAmount);
     }
 
     function testApprove(address sender, address recipient, uint256 amount) public {
 	vm.prank(sender);
-	evm20.approve(recipient, amount);
+	require(evm20.approve(recipient, amount));
 	uint256 approval = evm20.allowance(sender, recipient);
 	assertEq(approval, amount);
     }
 
     function testApproveClear(address sender, address recipient, uint256 amount) public {
 	vm.prank(sender);
-	evm20.approve(recipient, amount);
+	require(evm20.approve(recipient, amount));
 	vm.prank(sender);
-	evm20.approve(recipient, 0);
+	require(evm20.approve(recipient, 0));
 	uint256 approval = evm20.allowance(sender, recipient);
 	assertEq(approval, 0);
     }
@@ -109,7 +110,7 @@ contract CounterTest is Test {
     function testTransferFromReducesBalance(address recipient, uint256 amount) public {
         uint256 balanceBefore = evm20.balanceOf(owner);
         vm.prank(owner);
-	evm20.transferFrom(owner, recipient, amount);
+	require(evm20.transferFrom(owner, recipient, amount));
         uint256 balanceAfter = evm20.balanceOf(owner);
         assertEq(balanceBefore, balanceAfter + amount);
     }
@@ -118,7 +119,7 @@ contract CounterTest is Test {
         vm.assume(recipient != owner);
         uint256 balanceBefore = evm20.balanceOf(recipient);
         vm.prank(owner);
-	evm20.transferFrom(owner, recipient, amount);
+	require(evm20.transferFrom(owner, recipient, amount));
         uint256 balanceAfter = evm20.balanceOf(recipient);
         assertEq(balanceBefore + amount, balanceAfter);
     }
@@ -131,7 +132,7 @@ contract CounterTest is Test {
 	vm.prank(owner);
 	evm20.transfer(sender, amount);
 	vm.prank(sender);
-	evm20.transferFrom(sender, recipient, amount);
+	require(evm20.transferFrom(sender, recipient, amount));
 	uint256 balance = evm20.balanceOf(sender);
 	assertEq(balance, 0);
     }
@@ -144,7 +145,7 @@ contract CounterTest is Test {
 	evm20.transfer(sender, startAmount);
 	uint256 balanceBefore = evm20.balanceOf(sender);
 	vm.prank(sender);
-	evm20.transferFrom(sender, sender, transferAmount);
+	require(evm20.transferFrom(sender, sender, transferAmount));
 	uint256 balanceAfter = evm20.balanceOf(sender);
 	assertEq(balanceBefore, balanceAfter);
     }
@@ -157,6 +158,7 @@ contract CounterTest is Test {
         vm.prank(owner);
 	evm20.transfer(sender, startAmount);
 	vm.prank(sender);
+	// No require to ensure that the actual function call reverts, rather than just an incorrect return
 	evm20.transferFrom(sender, recipient, transferAmount);
     }
 
@@ -169,7 +171,7 @@ contract CounterTest is Test {
 	evm20.approve(spender, allowance);
 	uint256 allowanceBefore = evm20.allowance(owner, spender);
         vm.prank(spender);
-	evm20.transferFrom(owner, recipient, amount);
+	require(evm20.transferFrom(owner, recipient, amount));
 	uint256 allowanceAfter = evm20.allowance(owner, spender);
 	assertEq(allowanceBefore - amount, allowanceAfter);
     }
@@ -182,6 +184,7 @@ contract CounterTest is Test {
 	vm.prank(owner);
 	evm20.approve(spender, allowance);
         vm.prank(spender);
+	// No require to ensure that the actual function call reverts, rather than just an incorrect return
 	evm20.transferFrom(owner, recipient, amount);
     }
 }
