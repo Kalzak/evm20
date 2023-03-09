@@ -162,7 +162,7 @@ Signature	Function
 	jumpi			// amount sender
 	caller			// caller amount sender
 	dup3			// sender caller amount sender
-	msize mstore		// sender amount sender
+	msize mstore		// caller amount sender
 	msize mstore		// amount sender
 	msize 0x0 sha3		// allowancekey amount sender
 	dup1			// allowancekey allowancekey amount sender
