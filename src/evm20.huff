@@ -44,6 +44,10 @@
 	revert_memfree:
 		msize msize mstore
 		msize 0x0 revert
+
+	revert_normal:
+		0x0 0x0 mstore
+		0x20 0x0 revert
 }
 
 #define macro micro_dispatcher() = takes(0) returns(0) {
@@ -79,13 +83,13 @@
 #define macro allowance() = takes(0) returns(0) {
 	0x4 calldataload	// approver
 	msize mstore		//
-	msize			// msize(0x20)
-	0x24 calldataload	// approvee msize(0x20)
-	msize mstore		// msize(0x20)
-	msize			// msize(0x40) msize(0x20)
-	msize 0x0 sha3		// approvalkey msize(0x40) msize(0x20)
-	sload			// approvalamount msize(0x40) msize(0x20)
-	msize mstore 		// msize(0x40) msize(0x20)
+	msize			// size
+	0x24 calldataload	// approvee size
+	msize mstore		// size
+	msize			// offset size
+	msize 0x0 sha3		// approvalkey offset size
+	sload			// approvalamount offset size
+	msize mstore 		// offset size
 	return			//
 }
 
@@ -139,70 +143,56 @@
 	return			//
 }
 
-
 #define macro transferFrom() = takes(0) returns(0) {
-	0x4 calldataload	// sender
-	0x44 calldataload	// amount sender
-	dup2			// sender amount sender
-	caller			// caller sender amount sender
-	eq			// callerissender amount sender
-	skip_allowance		// skipjump callerissender amount sender
-	jumpi			// amount sender
-	caller			// caller amount sender
-	dup3			// sender caller amount sender
-	msize mstore		// caller amount sender
-	msize mstore		// amount sender
-	msize 0x0 sha3		// allowancekey amount sender
-	dup1			// allowancekey allowancekey amount sender
-	sload			// allowance allowancekey amount sender
-	dup3			// amount allowance allowancekey amount sender
-	dup2			// allowance amount allowance allowancekey amount sender
-	sub			// allowanceafter allowance allowancekey amount sender
-	dup1			// allowanceafter allowanceafter allowance allowancekey amount sender
-	swap2			// allowance allowanceafter allowanceafter alloawncekey amount sender
-	swap1			// allowanceafter allowance allowanceafter allowancekey amount sender
-	gt			// isoverflow alloawnceafter allowancekey amount sender
-	iszero			// isnotoverflow allowanceafter allowancekey amount sender
-	enough_allowance	// enoughallowancejump isnotoverflow allowanceafter allowancekey amount sender
-	jumpi			// allowanceafter allowancekey amount sender
-	0x1 0x0 mstore		// allowanceafter allowancekey amount sender
-	0x20 0x0 revert		// allowanceafter allowancekey amount sender
-	enough_allowance:
-	swap1			// allowancekey allowanceafter amount sender
-	sstore			// amount sender
+	0x24 calldataload	// to
+	0x4 calldataload	// from to
+	0x44 calldataload	// amount from to
+	dup2			// from amount from to
+	caller			// caller from amount from to
+	eq			// skip amount from to
+	skip_allowance		// skipallowancedest skip amount from to
+	jumpi 			// amount from to
+	dup2			// from amount from to
+	msize mstore		// amount from to
+	caller			// caller amount from to
+	msize mstore		// amount from to
+	msize 0x0 sha3		// allowancekey amount from to
+	dup1			// allowancekey allowancekey amount from to
+	sload			// allowance allowancekey amount from to
+	dup3			// amount allowance allowancekey amount from to
+	dup2			// allowance amount allowance allowancekey amount from to
+	sub			// newallowance allowance allowancekey amount from to
+	swap1			// allowance newallowance allowancekey amount from to
+	dup2			// newallowance allowance newallowance allowancekey amount from to
+	gt			// overflow newallowance allowancekey amount from to
+	revert_normal		// revertjump overflow newallowance allowancekey amount from to
+	jumpi			// newallowance allowancekey amount from to
+	swap1			// allowancekey newallowance amount from to
+	sstore			// amount from to
 	skip_allowance:
-	dup2			// sender amount sender
-	sload			// senderbalance amount sender
-	dup2			// amount senderbalance amount sender
-	dup2			// senderbalance amount senderbalance amount sender
-	sub			// newsenderbalance senderbalance amount sender
-	dup1			// newsenderbalance newsenderbalance senderbalance amount sender
-	swap2			// senderbalance newsenderbalance newsenderbalance amount sender
-	lt			// isoverflow newsenderbalance amount sender
-	iszero			// isnotoverflow newsenderbalance amount sender
-	enough_balance		// enoughbalancejump isnotoverflow newsenderbalance amount sender
-	jumpi			// newsenderbalance amount sender
-	0x0 0x0 mstore		// newsenderbalance amount sender
-	0x20 0x0 revert		// newsenderbalance amount sender
-	enough_balance:
-	swap1			// amount newsenderbalance sender
-	swap2			// sender newsenderbalance amount
-	sstore			// amount
-	0x24 calldataload	// recipient amount 
-	dup1			// recipient recipient amount
-	sload			// recipientbalance recipient amount
-	swap1			// recipient recipientbalance amount
-	swap2			// amount recipientbalance recipient
-	add			// newrecipientbalance recipient
-	swap1			// recipient newrecipientbalance
-	sstore			//
-	0x24 calldataload	// recipient
-	0x4 calldataload	// sender recipient
-	0x44 calldataload	// amount sender recipient
-	0x0 mstore		// sender recipient
-	__EVENT_HASH(Transfer)	// eventhash sender recipient
-	0x20 0x0		// offset size eventhash sender recipient
-	log3			//
-	0x1 0x0 mstore		//
-	0x20 0x0 return		//
+	dup2			// from amount from to
+	sload			// frombalance amount from to
+	dup2			// amount frombalance amount from to
+	dup2			// frombalance amount frombalance amount from to
+	sub			// newfrombalance frombalance amount from to
+	swap1			// frombalance newfrombalance amount from to
+	dup2			// newfrombalance frombalance newfrombalance amount from to
+	gt			// overflow newfrombalance amount from to
+	revert_normal		// revertjump overflow newfrombalance amount from to
+	jumpi			// newfrombalance amount from to
+	dup3			// from newfrombalance amount from to
+	sstore			// amount from to
+	dup3			// to amount from to
+	sload			// tobalance amount from to
+	dup2			// amount tobalance amount from to
+	add			// newtobalance amount from to
+	dup4			// to newtobalance amount from to
+	sstore			// amount from to
+	0x0 mstore		// from to
+	__EVENT_HASH(Transfer)	// eventhash from to
+	0x20 0x0		// offset size eventhash from to
+	log3			// 
+	0x20 msize		// offset size
+	0x1 msize mstore	// offset size
+	return 			//
 }
