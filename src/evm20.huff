@@ -1,20 +1,14 @@
-/*
-
-Signature	Function
-
-0x18160ddd	totalSupply()(uint256)
-0x70a08231	balanceOf(address)(uint256)
-0xa9059cbb	transfer(address,uint256)(bool)
-0xdd62ed3e	allowance(address,address)(uint256)
-0x095ea7b3	approve(address,uint256)(bool)
-0x23b872dd	transferFrom(address,address,uint256)(bool)
-
-*/
-
-#define constant TOTAL_SUPPLY = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+#define function totalSupply() view returns (uint256)
+#define function balanceOf(address) view returns (uint256)
+#define function transfer(address, uint256) nonpayable returns (bool)
+#define function allowance(address, address) view returns (uint256)
+#define function approve(address, uint256) nonpayable returns (bool)
+#define function transferFrom(address, address, uint256) nonpayable returns (bool)
 
 #define event Approval(address indexed, address indexed, uint256)
 #define event Transfer(address indexed, address indexed, uint256)
+
+#define constant TOTAL_SUPPLY = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 
 #define macro CONSTRUCTOR() = takes(0) returns(0) {
 	[TOTAL_SUPPLY]
@@ -25,30 +19,31 @@ Signature	Function
 #define macro MAIN() = takes(0) returns(0) {
 	// Use only one dispatcher
 	// Check the README for more info
+
 	full_dispatcher()
 	//micro_dispatcher()
 
 	totalSupply:
-	totalSupply()
+		totalSupply()
 
 	balanceOf:
-	balanceOf()
+		balanceOf()
 
 	transfer:
-	transfer()
+		transfer()
 
 	allowance:
-	allowance()
+		allowance()
 
 	approve:
-	approve()
+		approve()
 
 	transferFrom:
-	transferFrom()
+		transferFrom()
 
 	revert_memfree:
-	msize msize mstore
-	msize 0x0 revert
+		msize msize mstore
+		msize 0x0 revert
 }
 
 #define macro micro_dispatcher() = takes(0) returns(0) {
@@ -58,43 +53,14 @@ Signature	Function
 }
 
 #define macro full_dispatcher() = takes(0) returns(0) {
-
 	msize calldataload
 	0xe0 shr
-	0x18160ddd eq	// totalSupply
-	totalSupply
-	jumpi
-
-	msize calldataload
-	0xe0 shr
-	0x70a08231 eq	// balanceOf
-	balanceOf
-	jumpi
-
-	msize calldataload
-	0xe0 shr
-	0xa9059cbb eq	// transfer
-	transfer
-	jumpi
-
-	msize calldataload
-	0xe0 shr
-	0xdd62ed3e eq	// allowance
-	allowance
-	jumpi
-
-	msize calldataload
-	0xe0 shr
-	0x095ea7b3 eq	// approve
-	approve
-	jumpi
-
-	msize calldataload
-	0xe0 shr
-	0x23b872dd eq	// transferFrom
-	transferFrom
-	jumpi
-
+	dup1 __FUNC_SIG(totalSupply) eq totalSupply jumpi
+	dup1 __FUNC_SIG(balanceOf) eq balanceOf jumpi
+	dup1 __FUNC_SIG(transfer) eq transfer jumpi
+	dup1 __FUNC_SIG(allowance) eq allowance jumpi
+	dup1 __FUNC_SIG(approve) eq approve jumpi
+	dup1 __FUNC_SIG(transferFrom) eq transferFrom jumpi
 	invalid
 }
 
