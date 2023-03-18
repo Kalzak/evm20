@@ -15,6 +15,9 @@ contract CounterTest is Test {
     address private alice = address(0x1111);
     address private bob = address(0x2222);
 
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+
     function setUp() public {
         evm20 = IERC20(HuffDeployer.deploy("evm20"));
     }
@@ -106,6 +109,13 @@ contract CounterTest is Test {
 	require(evm20.approve(recipient, 0));
 	uint256 approval = evm20.allowance(sender, recipient);
 	assertEq(approval, 0);
+    }
+
+    function testApproveEvent(address sender, address recipient, uint256 amount) public {
+	vm.prank(sender);
+	vm.expectEmit(true, true, false, true);
+	emit Approval(sender, recipient, amount);
+	require(evm20.approve(recipient, amount));
     }
 
     function testTransferFromReducesBalance(address recipient, uint256 amount) public {
