@@ -108,33 +108,35 @@
 }
 
 #define macro transfer() = takes(0) returns(0) {
-	0x4 calldataload	// recipient
-	0x24 calldataload	// amount recipient
-	caller sload		// senderbalance amount recipient
-	dup2			// amount senderbalance amount recipient
-	dup2			// senderbalance amount senderbalance amount recipient
-	sub			// senderbalanceafter senderbalance amount recipient
-	swap1			// senderbalance senderbalanceafter amount recipient
-	dup2			// senderbalanceafter senderbalance senderbalanceafter amount recipient
-	gt			// notenoughbalance senderbalanceafter amount recipient
-	revert_memfree		// revertjump notenoughbalance senderbalanceafter amount recipient
-	jumpi			// senderbalanceafter amount recipient
-	caller sstore		// amount recipient
-	dup2			// recipient amount recipient
-	sload			// recipientbalanace amount recipient
-	add			// newrecipientbalance recipient
-	swap1			// recipient newrecipientbalance
-	sstore			//
-	0x24 calldataload	// amount
-	0x0 mstore		//
-	0x4 calldataload	// recipient
-	caller			// sender recipient
-	__EVENT_HASH(Transfer)	// eventhash sender recipient
-	0x20 0x0		// offset size eventhash sender recipient
+	0x4 calldataload	// to
+	0x24 calldataload	// amount to
+	caller sload		// frombalance amount to
+	dup2			// amount frombalance amount to
+	dup2			// frombalance amount frombalance amount to
+	sub			// newfrombalance frombalance amount to
+	swap1			// frombalance newfrombalance amount to
+	dup2			// newfrombalance frombalance newfrombalance amount to
+	gt			// overflow newfrombalance amount to
+	revert_memfree		// revertjump overflow newfrombalance amount to
+	jumpi			// newfrombalance amount to
+	caller			// from newfrombalance amount to
+	sstore			// amount to
+	dup1			// amount amount to
+	dup3			// to amount amount to
+	sload			// tobalance amount amount to
+	add			// newtobalance amount to
+	dup3			// to newtobalance amount to
+	sstore			// amount to
+	msize mstore		// to
+	caller			// from to
+	__EVENT_HASH(Transfer)	// eventhash from to
+	msize 0x0		// offset size eventhash from to
 	log3			//
-	0x1 0x0 mstore		//
-	0x20 0x0 return		//
+	msize msize		// offset size
+	0x1 msize mstore	// offset size
+	return			//
 }
+
 
 #define macro transferFrom() = takes(0) returns(0) {
 	0x4 calldataload	// sender
