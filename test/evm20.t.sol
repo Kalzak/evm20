@@ -95,6 +95,13 @@ contract CounterTest is Test {
 	evm20.transfer(recipient, transferAmount);
     }
 
+    function testTransferEvent(address recipient, uint256 amount) public {
+	vm.expectEmit(true, true, false, true);
+	emit Transfer(owner, recipient, amount);
+        vm.prank(owner);
+	evm20.transfer(recipient, amount);
+    }
+
     function testApprove(address sender, address recipient, uint256 amount) public {
 	vm.prank(sender);
 	require(evm20.approve(recipient, amount));
@@ -200,5 +207,13 @@ contract CounterTest is Test {
         vm.prank(spender);
 	// No require to ensure that the actual function call reverts, rather than just an incorrect return
 	evm20.transferFrom(owner, recipient, amount);
+    }
+
+    function testTransferFromEvent(address recipient, uint256 amount) public {
+        vm.assume(recipient != owner);
+	vm.expectEmit(true, true, false, true);
+	emit Transfer(owner, recipient, amount);
+        vm.prank(owner);
+	require(evm20.transferFrom(owner, recipient, amount));
     }
 }

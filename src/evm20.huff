@@ -122,22 +122,23 @@ Signature	Function
 }
 
 #define macro approve() = takes(0) returns(0) {
-	0x24 calldataload	// approveamount
-	0x4 calldataload	// approvee approveamount
-	caller			// approver approvee approveamount
-	msize mstore		// approvee approveamount
-	msize mstore		// approveamount
-	dup1			// approveamount approveamount
-	msize 0x0 sha3		// approvalkey approveamount approveamount
-	sstore			// approveamount
-	0x0 mstore		//
 	0x4 calldataload	// approvee
-	caller 			// approver approvee
+	caller			// approver approvee
+	0x24 calldataload	// amount approver approvee
+	dup1			// amount amount approver approvee
+	dup4			// approvee amount amount approver approvee
+	caller			// approver approvee amount amount approver approvee
+	msize mstore		// approvee amount amount approver approvee
+	msize mstore		// amount amount approver approvee
+	msize 0x0 sha3		// approvalkey amount amount approver approvee
+	sstore			// amount approver approvee
+	msize mstore		// approver approvee
 	__EVENT_HASH(Approval)	// eventhash approver approvee
-	0x20 0x0		// offset size eventhash approver approvee
+	0x20 0x40		// offset size eventhash approver approvee
 	log3			//
-	0x1 msize mstore	//
-	0x20 0x40 return	//
+	0x20 msize		// offset size
+	0x1 msize mstore	// offset size
+	return			//
 }
 
 #define macro transfer() = takes(0) returns(0) {
@@ -158,8 +159,15 @@ Signature	Function
 	add			// newrecipientbalance recipient
 	swap1			// recipient newrecipientbalance
 	sstore			//
-	0x1 msize mstore	//
-	msize 0x0 return	//
+	0x24 calldataload	// amount
+	0x0 mstore		//
+	0x4 calldataload	// recipient
+	caller			// sender recipient
+	__EVENT_HASH(Transfer)	// eventhash sender recipient
+	0x20 0x0		// offset size eventhash sender recipient
+	log3			//
+	0x1 0x0 mstore		//
+	0x20 0x0 return		//
 }
 
 #define macro transferFrom() = takes(0) returns(0) {
@@ -218,6 +226,13 @@ Signature	Function
 	add			// newrecipientbalance recipient
 	swap1			// recipient newrecipientbalance
 	sstore			//
+	0x24 calldataload	// recipient
+	0x4 calldataload	// sender recipient
+	0x44 calldataload	// amount sender recipient
+	0x0 mstore		// sender recipient
+	__EVENT_HASH(Transfer)	// eventhash sender recipient
+	0x20 0x0		// offset size eventhash sender recipient
+	log3			//
 	0x1 0x0 mstore		//
 	0x20 0x0 return		//
 }
