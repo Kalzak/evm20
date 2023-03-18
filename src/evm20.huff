@@ -77,14 +77,16 @@
 }	
 
 #define macro allowance() = takes(0) returns(0) {
-	0x24 calldataload	// approvee
-	0x4 calldataload	// approver approvee
-	msize mstore		// approvee
+	0x4 calldataload	// approver
 	msize mstore		//
-	msize 0x0 sha3		// approvalkey
-	sload			// approveamount
-	msize mstore		//
-	0x20 0x40 return	//
+	msize			// msize(0x20)
+	0x24 calldataload	// approvee msize(0x20)
+	msize mstore		// msize(0x20)
+	msize			// msize(0x40) msize(0x20)
+	msize 0x0 sha3		// approvalkey msize(0x40) msize(0x20)
+	sload			// approvalamount msize(0x40) msize(0x20)
+	msize mstore 		// msize(0x40) msize(0x20)
+	return			//
 }
 
 #define macro approve() = takes(0) returns(0) {
