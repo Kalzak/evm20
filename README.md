@@ -21,9 +21,9 @@ You can only have one dispatcher, go to the `MAIN` macro and comment out the one
 | totalSupply  | 0x18160ddd              | 0x00000006           |
 | balanceOf    | 0x70a08231              | 0x0000002e           |
 | transfer     | 0xa9059cbb              | 0x00000039           |
-| allowance    | 0xdd62ed3e              | 0x0000005b           |
-| approve      | 0x095ea7b3              | 0x00000072           |
-| transferFrom | 0x23b872dd              | 0x0000008c           |
+| allowance    | 0xdd62ed3e              | 0x00000083           |
+| approve      | 0x095ea7b3              | 0x00000098           |
+| transferFrom | 0x23b872dd              | 0x000000dc           |
 
 ## Setup
 
