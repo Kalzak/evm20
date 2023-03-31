@@ -11,188 +11,188 @@
 #define constant TOTAL_SUPPLY = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 
 #define macro CONSTRUCTOR() = takes(0) returns(0) {
-	[TOTAL_SUPPLY]
-	caller
-	sstore
+    [TOTAL_SUPPLY]
+    caller
+    sstore
 }
 
 #define macro MAIN() = takes(0) returns(0) {
-	// Use only one dispatcher
-	// Check the README for more info
+    // Use only one dispatcher
+    // Check the README for more info
 
-	full_dispatcher()
-	//micro_dispatcher()
+    full_dispatcher()
+    //micro_dispatcher()
 
-	totalSupply:
-		totalSupply()
+    totalSupply:
+        totalSupply()
 
-	balanceOf:
-		balanceOf()
+    balanceOf:
+        balanceOf()
 
-	transfer:
-		transfer()
+    transfer:
+        transfer()
 
-	allowance:
-		allowance()
+    allowance:
+        allowance()
 
-	approve:
-		approve()
+    approve:
+        approve()
 
-	transferFrom:
-		transferFrom()
+    transferFrom:
+        transferFrom()
 
-	revert_memfree:
-		msize msize mstore
-		msize 0x0 revert
+    revert_memfree:
+        msize msize mstore
+        msize 0x0 revert
 
-	revert_normal:
-		0x0 0x0 mstore
-		0x20 0x0 revert
+    revert_normal:
+        0x0 0x0 mstore
+        0x20 0x0 revert
 }
 
 #define macro micro_dispatcher() = takes(0) returns(0) {
-	msize calldataload
-	0xe0 shr
-	jump
+    msize calldataload
+    0xe0 shr
+    jump
 }
 
 #define macro full_dispatcher() = takes(0) returns(0) {
-	msize calldataload
-	0xe0 shr
-	dup1 __FUNC_SIG(totalSupply) eq totalSupply jumpi
-	dup1 __FUNC_SIG(balanceOf) eq balanceOf jumpi
-	dup1 __FUNC_SIG(transfer) eq transfer jumpi
-	dup1 __FUNC_SIG(allowance) eq allowance jumpi
-	dup1 __FUNC_SIG(approve) eq approve jumpi
-	dup1 __FUNC_SIG(transferFrom) eq transferFrom jumpi
-	invalid
+    msize calldataload
+    0xe0 shr
+    dup1 __FUNC_SIG(totalSupply) eq totalSupply jumpi
+    dup1 __FUNC_SIG(balanceOf) eq balanceOf jumpi
+    dup1 __FUNC_SIG(transfer) eq transfer jumpi
+    dup1 __FUNC_SIG(allowance) eq allowance jumpi
+    dup1 __FUNC_SIG(approve) eq approve jumpi
+    dup1 __FUNC_SIG(transferFrom) eq transferFrom jumpi
+    invalid
 }
 
 #define macro totalSupply() = takes(0) returns(0) {
-	[TOTAL_SUPPLY] msize mstore 	//
-	msize 0x0 return		//
+    [TOTAL_SUPPLY] msize mstore //
+    msize 0x0 return            //
 }
 
 #define macro balanceOf() = takes(0) returns(0) {
-	0x4 calldataload	// addresskey
-	sload			// balance
-	msize mstore		//
-	msize 0x0 return	//
+    0x4 calldataload    // addresskey
+    sload               // balance
+    msize mstore        //
+    msize 0x0 return    //
 }	
 
 #define macro allowance() = takes(0) returns(0) {
-	0x4 calldataload	// approver
-	msize mstore		//
-	msize			// size
-	0x24 calldataload	// approvee size
-	msize mstore		// size
-	msize			// offset size
-	msize 0x0 sha3		// approvalkey offset size
-	sload			// approvalamount offset size
-	msize mstore 		// offset size
-	return			//
+    0x4 calldataload    // approver
+    msize mstore        //
+    msize               // size
+    0x24 calldataload   // approvee size
+    msize mstore        // size
+    msize               // offset size
+    msize 0x0 sha3      // approvalkey offset size
+    sload               // approvalamount offset size
+    msize mstore        // offset size
+    return              //
 }
 
 #define macro approve() = takes(0) returns(0) {
-	0x4 calldataload	// approvee
-	caller			// approver approvee
-	0x24 calldataload	// amount approver approvee
-	dup1			// amount amount approver approvee
-	dup4			// approvee amount amount approver approvee
-	caller			// approver approvee amount amount approver approvee
-	msize mstore		// approvee amount amount approver approvee
-	msize mstore		// amount amount approver approvee
-	msize 0x0 sha3		// approvalkey amount amount approver approvee
-	sstore			// amount approver approvee
-	msize mstore		// approver approvee
-	__EVENT_HASH(Approval)	// eventhash approver approvee
-	0x20 0x40		// offset size eventhash approver approvee
-	log3			//
-	0x20 msize		// offset size
-	0x1 msize mstore	// offset size
-	return			//
+    0x4 calldataload        // approvee
+    caller                  // approver approvee
+    0x24 calldataload       // amount approver approvee
+    dup1                    // amount amount approver approvee
+    dup4                    // approvee amount amount approver approvee
+    caller                  // approver approvee amount amount approver approvee
+    msize mstore            // approvee amount amount approver approvee
+    msize mstore            // amount amount approver approvee
+    msize 0x0 sha3          // approvalkey amount amount approver approvee
+    sstore                  // amount approver approvee
+    msize mstore            // approver approvee
+    __EVENT_HASH(Approval)  // eventhash approver approvee
+    0x20 0x40               // offset size eventhash approver approvee
+    log3                    //
+    0x20 msize              // offset size
+    0x1 msize mstore        // offset size
+    return                  //
 }
 
 #define macro transfer() = takes(0) returns(0) {
-	0x4 calldataload	// to
-	0x24 calldataload	// amount to
-	caller sload		// frombalance amount to
-	dup2			// amount frombalance amount to
-	dup2			// frombalance amount frombalance amount to
-	sub			// newfrombalance frombalance amount to
-	swap1			// frombalance newfrombalance amount to
-	dup2			// newfrombalance frombalance newfrombalance amount to
-	gt			// overflow newfrombalance amount to
-	revert_memfree		// revertjump overflow newfrombalance amount to
-	jumpi			// newfrombalance amount to
-	caller			// from newfrombalance amount to
-	sstore			// amount to
-	dup1			// amount amount to
-	dup3			// to amount amount to
-	sload			// tobalance amount amount to
-	add			// newtobalance amount to
-	dup3			// to newtobalance amount to
-	sstore			// amount to
-	msize mstore		// to
-	caller			// from to
-	__EVENT_HASH(Transfer)	// eventhash from to
-	msize 0x0		// offset size eventhash from to
-	log3			//
-	msize msize		// offset size
-	0x1 msize mstore	// offset size
-	return			//
+    0x4 calldataload        // to
+    0x24 calldataload       // amount to
+    caller sload            // frombalance amount to
+    dup2                    // amount frombalance amount to
+    dup2                    // frombalance amount frombalance amount to
+    sub                     // newfrombalance frombalance amount to
+    swap1                   // frombalance newfrombalance amount to
+    dup2                    // newfrombalance frombalance newfrombalance amount to
+    gt                      // overflow newfrombalance amount to
+    revert_memfree          // revertjump overflow newfrombalance amount to
+    jumpi                   // newfrombalance amount to
+    caller                  // from newfrombalance amount to
+    sstore                  // amount to
+    dup1                    // amount amount to
+    dup3                    // to amount amount to
+    sload                   // tobalance amount amount to
+    add                     // newtobalance amount to
+    dup3                    // to newtobalance amount to
+    sstore                  // amount to
+    msize mstore            // to
+    caller                  // from to
+    __EVENT_HASH(Transfer)  // eventhash from to
+    msize 0x0               // offset size eventhash from to
+    log3                    //
+    msize msize             // offset size
+    0x1 msize mstore        // offset size
+    return                  //
 }
 
 #define macro transferFrom() = takes(0) returns(0) {
-	0x24 calldataload	// to
-	0x4 calldataload	// from to
-	0x44 calldataload	// amount from to
-	dup2			// from amount from to
-	caller			// caller from amount from to
-	eq			// skip amount from to
-	skip_allowance		// skipallowancedest skip amount from to
-	jumpi 			// amount from to
-	dup2			// from amount from to
-	msize mstore		// amount from to
-	caller			// caller amount from to
-	msize mstore		// amount from to
-	msize 0x0 sha3		// allowancekey amount from to
-	dup1			// allowancekey allowancekey amount from to
-	sload			// allowance allowancekey amount from to
-	dup3			// amount allowance allowancekey amount from to
-	dup2			// allowance amount allowance allowancekey amount from to
-	sub			// newallowance allowance allowancekey amount from to
-	swap1			// allowance newallowance allowancekey amount from to
-	dup2			// newallowance allowance newallowance allowancekey amount from to
-	gt			// overflow newallowance allowancekey amount from to
-	revert_normal		// revertjump overflow newallowance allowancekey amount from to
-	jumpi			// newallowance allowancekey amount from to
-	swap1			// allowancekey newallowance amount from to
-	sstore			// amount from to
-	skip_allowance:
-	dup2			// from amount from to
-	sload			// frombalance amount from to
-	dup2			// amount frombalance amount from to
-	dup2			// frombalance amount frombalance amount from to
-	sub			// newfrombalance frombalance amount from to
-	swap1			// frombalance newfrombalance amount from to
-	dup2			// newfrombalance frombalance newfrombalance amount from to
-	gt			// overflow newfrombalance amount from to
-	revert_normal		// revertjump overflow newfrombalance amount from to
-	jumpi			// newfrombalance amount from to
-	dup3			// from newfrombalance amount from to
-	sstore			// amount from to
-	dup3			// to amount from to
-	sload			// tobalance amount from to
-	dup2			// amount tobalance amount from to
-	add			// newtobalance amount from to
-	dup4			// to newtobalance amount from to
-	sstore			// amount from to
-	0x0 mstore		// from to
-	__EVENT_HASH(Transfer)	// eventhash from to
-	0x20 0x0		// offset size eventhash from to
-	log3			// 
-	0x20 msize		// offset size
-	0x1 msize mstore	// offset size
-	return 			//
+    0x24 calldataload       // to
+    0x4 calldataload        // from to
+    0x44 calldataload       // amount from to
+    dup2                    // from amount from to
+    caller                  // caller from amount from to
+    eq                      // skip amount from to
+    skip_allowance          // skipallowancedest skip amount from to
+    jumpi                   // amount from to
+    dup2                    // from amount from to
+    msize mstore            // amount from to
+    caller                  // caller amount from to
+    msize mstore            // amount from to
+    msize 0x0 sha3          // allowancekey amount from to
+    dup1                    // allowancekey allowancekey amount from to
+    sload                   // allowance allowancekey amount from to
+    dup3                    // amount allowance allowancekey amount from to
+    dup2                    // allowance amount allowance allowancekey amount from to
+    sub                     // newallowance allowance allowancekey amount from to
+    swap1                   // allowance newallowance allowancekey amount from to
+    dup2                    // newallowance allowance newallowance allowancekey amount from to
+    gt                      // overflow newallowance allowancekey amount from to
+    revert_normal           // revertjump overflow newallowance allowancekey amount from to
+    jumpi                   // newallowance allowancekey amount from to
+    swap1                   // allowancekey newallowance amount from to
+    sstore                  // amount from to
+    skip_allowance:
+    dup2                    // from amount from to
+    sload                   // frombalance amount from to
+    dup2                    // amount frombalance amount from to
+    dup2                    // frombalance amount frombalance amount from to
+    sub                     // newfrombalance frombalance amount from to
+    swap1                   // frombalance newfrombalance amount from to
+    dup2                    // newfrombalance frombalance newfrombalance amount from to
+    gt                      // overflow newfrombalance amount from to
+    revert_normal           // revertjump overflow newfrombalance amount from to
+    jumpi                   // newfrombalance amount from to
+    dup3                    // from newfrombalance amount from to
+    sstore                  // amount from to
+    dup3                    // to amount from to
+    sload                   // tobalance amount from to
+    dup2                    // amount tobalance amount from to
+    add                     // newtobalance amount from to
+    dup4                    // to newtobalance amount from to
+    sstore                  // amount from to
+    0x0 mstore              // from to
+    __EVENT_HASH(Transfer)  // eventhash from to
+    0x20 0x0                // offset size eventhash from to
+    log3                    // 
+    0x20 msize              // offset size
+    0x1 msize mstore        // offset size
+    return                  //
 }
