@@ -28,101 +28,103 @@ contract CounterTest is Test {
     }
 
     function testBalanceOfEmpty(address addr) public {
-	vm.assume(addr != owner);
+        vm.assume(addr != owner);
 
-	uint256 balance = evm20.balanceOf(addr);
-	assertEq(balance, 0);
+        uint256 balance = evm20.balanceOf(addr);
+        assertEq(balance, 0);
     }
 
     function testBalanceOfAtDeployment() public {
         uint256 balance = evm20.balanceOf(owner);
-	assertEq(balance, type(uint256).max);
+        assertEq(balance, type(uint256).max);
     }
 
     function testTransferReducesBalance(address sender, uint256 amount) public {
-	uint256 balanceBefore = evm20.balanceOf(owner);
+        vm.assume(sender != owner);
+
+        uint256 balanceBefore = evm20.balanceOf(owner);
         vm.prank(owner);
-	evm20.transfer(sender, amount);
-	uint256 balanceAfter = evm20.balanceOf(owner);
-	assertEq(balanceBefore, balanceAfter + amount);
+        evm20.transfer(sender, amount);
+        uint256 balanceAfter = evm20.balanceOf(owner);
+        assertEq(balanceBefore, balanceAfter + amount);
     }
 
     function testTransferIncreasesBalance(address recipient, uint256 amount) public {
         vm.assume(recipient != owner);
 
-	uint256 balanceBefore = evm20.balanceOf(recipient);
+        uint256 balanceBefore = evm20.balanceOf(recipient);
         vm.prank(owner);
-	require(evm20.transfer(recipient, amount));
-	uint256 balanceAfter = evm20.balanceOf(recipient);
-	assertEq(balanceBefore, balanceAfter - amount);
+        require(evm20.transfer(recipient, amount));
+        uint256 balanceAfter = evm20.balanceOf(recipient);
+        assertEq(balanceBefore, balanceAfter - amount);
     }
 
     function testTransferEntireBalance(address sender, address recipient, uint256 amount) public {
         vm.assume(sender != owner);
-	vm.assume(recipient != owner);
-	vm.assume(sender != recipient);
+        vm.assume(recipient != owner);
+        vm.assume(sender != recipient);
 
-	vm.prank(owner);
-	require(evm20.transfer(sender, amount));
-	vm.prank(sender);
-	require(evm20.transfer(recipient, amount));
-	uint256 balance = evm20.balanceOf(sender);
-	assertEq(balance, 0);
+        vm.prank(owner);
+        require(evm20.transfer(sender, amount));
+        vm.prank(sender);
+        require(evm20.transfer(recipient, amount));
+        uint256 balance = evm20.balanceOf(sender);
+        assertEq(balance, 0);
     }
 
     function testTransferSelf(address sender, uint256 startAmount, uint256 transferAmount) public {
         vm.assume(startAmount >= transferAmount);
-	vm.assume(sender != owner);
+        vm.assume(sender != owner);
 
-	vm.prank(owner);
-	require(evm20.transfer(sender, startAmount));
-	uint256 balanceBefore = evm20.balanceOf(sender);
-	vm.prank(sender);
-	require(evm20.transfer(sender, transferAmount));
-	uint256 balanceAfter = evm20.balanceOf(sender);
-	assertEq(balanceBefore, balanceAfter);
+        vm.prank(owner);
+        require(evm20.transfer(sender, startAmount));
+        uint256 balanceBefore = evm20.balanceOf(sender);
+        vm.prank(sender);
+        require(evm20.transfer(sender, transferAmount));
+        uint256 balanceAfter = evm20.balanceOf(sender);
+        assertEq(balanceBefore, balanceAfter);
     }
 
     function testFailTransferMoreThanBalance(address sender, address recipient, uint256 startAmount, uint256 transferAmount) public {
         vm.assume(sender != owner);
-	vm.assume(recipient != owner);
+        vm.assume(recipient != owner);
         vm.assume(transferAmount > startAmount);
 
-	vm.prank(owner);
-	require(evm20.transfer(sender, startAmount));
-	vm.prank(sender);
-	// No require to ensure that the actual function call reverts, rather than just an incorrect return
-	evm20.transfer(recipient, transferAmount);
+        vm.prank(owner);
+        require(evm20.transfer(sender, startAmount));
+        vm.prank(sender);
+        // No require to ensure that the actual function call reverts, rather than just an incorrect return
+        evm20.transfer(recipient, transferAmount);
     }
 
     function testTransferEvent(address recipient, uint256 amount) public {
-	vm.expectEmit(true, true, false, true);
-	emit Transfer(owner, recipient, amount);
+        vm.expectEmit(true, true, false, true);
+        emit Transfer(owner, recipient, amount);
         vm.prank(owner);
-	evm20.transfer(recipient, amount);
+        evm20.transfer(recipient, amount);
     }
 
     function testApprove(address sender, address recipient, uint256 amount) public {
-	vm.prank(sender);
-	require(evm20.approve(recipient, amount));
-	uint256 approval = evm20.allowance(sender, recipient);
-	assertEq(approval, amount);
+        vm.prank(sender);
+        require(evm20.approve(recipient, amount));
+        uint256 approval = evm20.allowance(sender, recipient);
+        assertEq(approval, amount);
     }
 
     function testApproveClear(address sender, address recipient, uint256 amount) public {
-	vm.prank(sender);
-	require(evm20.approve(recipient, amount));
-	vm.prank(sender);
-	require(evm20.approve(recipient, 0));
-	uint256 approval = evm20.allowance(sender, recipient);
-	assertEq(approval, 0);
+        vm.prank(sender);
+        require(evm20.approve(recipient, amount));
+        vm.prank(sender);
+        require(evm20.approve(recipient, 0));
+        uint256 approval = evm20.allowance(sender, recipient);
+        assertEq(approval, 0);
     }
 
     function testApproveEvent(address sender, address recipient, uint256 amount) public {
-	vm.prank(sender);
-	vm.expectEmit(true, true, false, true);
-	emit Approval(sender, recipient, amount);
-	require(evm20.approve(recipient, amount));
+        vm.prank(sender);
+        vm.expectEmit(true, true, false, true);
+        emit Approval(sender, recipient, amount);
+        require(evm20.approve(recipient, amount));
     }
 
     function testTransferFromReducesBalance(address recipient, uint256 amount) public {
@@ -130,7 +132,7 @@ contract CounterTest is Test {
 
         uint256 balanceBefore = evm20.balanceOf(owner);
         vm.prank(owner);
-	require(evm20.transferFrom(owner, recipient, amount));
+        require(evm20.transferFrom(owner, recipient, amount));
         uint256 balanceAfter = evm20.balanceOf(owner);
         assertEq(balanceBefore, balanceAfter + amount);
     }
@@ -140,80 +142,80 @@ contract CounterTest is Test {
 
         uint256 balanceBefore = evm20.balanceOf(recipient);
         vm.prank(owner);
-	require(evm20.transferFrom(owner, recipient, amount));
+        require(evm20.transferFrom(owner, recipient, amount));
         uint256 balanceAfter = evm20.balanceOf(recipient);
         assertEq(balanceBefore + amount, balanceAfter);
     }
 
     function testTransferFromEntireBalance(address sender, address recipient, uint256 amount) public {
         vm.assume(sender != owner);
-	vm.assume(recipient != owner);
-	vm.assume(sender != recipient);
+        vm.assume(recipient != owner);
+        vm.assume(sender != recipient);
 
-	vm.prank(owner);
-	evm20.transfer(sender, amount);
-	vm.prank(sender);
-	require(evm20.transferFrom(sender, recipient, amount));
-	uint256 balance = evm20.balanceOf(sender);
-	assertEq(balance, 0);
+        vm.prank(owner);
+        evm20.transfer(sender, amount);
+        vm.prank(sender);
+        require(evm20.transferFrom(sender, recipient, amount));
+        uint256 balance = evm20.balanceOf(sender);
+        assertEq(balance, 0);
     }
 
-    function testTransferFromSelf(address sender, address recipient, uint256 startAmount, uint256 transferAmount) public {
+    function testTransferFromSelf(address sender, uint256 startAmount, uint256 transferAmount) public {
         vm.assume(startAmount >= transferAmount);
-	vm.assume(sender != owner);
+        vm.assume(sender != owner);
 
-	vm.prank(owner);
-	evm20.transfer(sender, startAmount);
-	uint256 balanceBefore = evm20.balanceOf(sender);
-	vm.prank(sender);
-	require(evm20.transferFrom(sender, sender, transferAmount));
-	uint256 balanceAfter = evm20.balanceOf(sender);
-	assertEq(balanceBefore, balanceAfter);
+        vm.prank(owner);
+        evm20.transfer(sender, startAmount);
+        uint256 balanceBefore = evm20.balanceOf(sender);
+        vm.prank(sender);
+        require(evm20.transferFrom(sender, sender, transferAmount));
+        uint256 balanceAfter = evm20.balanceOf(sender);
+        assertEq(balanceBefore, balanceAfter);
     }
 
     function testFailTransferFromMoreThanBalance(address sender, address recipient, uint256 startAmount, uint256 transferAmount) public {
         vm.assume(sender != owner);
-	vm.assume(recipient != owner);
+        vm.assume(recipient != owner);
         vm.assume(transferAmount > startAmount);
 
         vm.prank(owner);
-	evm20.transfer(sender, startAmount);
-	vm.prank(sender);
-	// No require to ensure that the actual function call reverts, rather than just an incorrect return
-	evm20.transferFrom(sender, recipient, transferAmount);
+        evm20.transfer(sender, startAmount);
+        vm.prank(sender);
+        // No require to ensure that the actual function call reverts, rather than just an incorrect return
+        evm20.transferFrom(sender, recipient, transferAmount);
     }
 
     function testTransferFromReducesApproval(address spender, address recipient, uint256 allowance, uint256 amount) public {
         vm.assume(spender != owner);
-	vm.assume(recipient != owner);
-	vm.assume(allowance >= amount);
-	
-	vm.prank(owner);
-	evm20.approve(spender, allowance);
-	uint256 allowanceBefore = evm20.allowance(owner, spender);
+        vm.assume(recipient != owner);
+        vm.assume(allowance >= amount);
+
+        vm.prank(owner);
+        evm20.approve(spender, allowance);
+        uint256 allowanceBefore = evm20.allowance(owner, spender);
         vm.prank(spender);
-	require(evm20.transferFrom(owner, recipient, amount));
-	uint256 allowanceAfter = evm20.allowance(owner, spender);
-	assertEq(allowanceBefore - amount, allowanceAfter);
+        require(evm20.transferFrom(owner, recipient, amount));
+        uint256 allowanceAfter = evm20.allowance(owner, spender);
+        assertEq(allowanceBefore - amount, allowanceAfter);
     }
 
     function testFailTransferFromMoreThanAllowance(address spender, address recipient, uint256 allowance, uint256 amount) public {
         vm.assume(spender != owner);
-	vm.assume(recipient != owner);
-	vm.assume(allowance < amount);
-	
-	vm.prank(owner);
-	evm20.approve(spender, allowance);
+        vm.assume(recipient != owner);
+        vm.assume(allowance < amount);
+
+        vm.prank(owner);
+        evm20.approve(spender, allowance);
         vm.prank(spender);
-	// No require to ensure that the actual function call reverts, rather than just an incorrect return
-	evm20.transferFrom(owner, recipient, amount);
+        // No require to ensure that the actual function call reverts, rather than just an incorrect return
+        evm20.transferFrom(owner, recipient, amount);
     }
 
     function testTransferFromEvent(address recipient, uint256 amount) public {
         vm.assume(recipient != owner);
-	vm.expectEmit(true, true, false, true);
-	emit Transfer(owner, recipient, amount);
+        vm.expectEmit(true, true, false, true);
+        emit Transfer(owner, recipient, amount);
         vm.prank(owner);
-	require(evm20.transferFrom(owner, recipient, amount));
+        require(evm20.transferFrom(owner, recipient, amount));
     }
 }
