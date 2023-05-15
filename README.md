@@ -2,7 +2,7 @@
 
 ## About
 
-An ERC20 contract written in evm bytecode using the [Huff](https://huff.sh/) language. It supports two function dispatchers which are explained in the following section. I tried to write the most optimal code, but it's not perfect and I know there are some areas which can be improved. This was just done over one weekend so the test suite isn't comprehensive and I don't recommend using it for any mainnet project in this current state.
+An ERC20 contract written in evm bytecode using [Huff](https://huff.sh/). It supports two function dispatchers which are explained in the following section. I tried to write the most optimal code, but it's not perfect and I know there are some areas which can be improved. This was just done over one weekend so the test suite isn't comprehensive and I don't recommend using it for any mainnet project in this current state.
 
 ## Dispatcher
 
