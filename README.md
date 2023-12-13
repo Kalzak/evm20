@@ -4,7 +4,7 @@
 
 An ERC20 contract written in evm bytecode using the [Huff](https://huff.sh/) language. It supports two function dispatchers which are explained in the following section. I tried to write the most optimal code, but I'm sure there are some areas that can still be improved. 
 
-This was originally written over one weekend as a toy projects but my work took notice and I ended up revisiting and further improving and optimising. A full test suite has been added taking advantage of Foundry's fuzzing capabilities, and the contract has been [formally verified](https://github.com/NethermindEth/evm20-verification) using the [K Framework](https://kframework.org/) by Nethermind and is proven to behave correctly.
+This was originally written over one weekend as a toy project but my work took notice and I ended up revisiting and further optimising/improving. A full test suite has been added taking advantage of Foundry's fuzzing capabilities, and the contract has been [formally verified](https://github.com/NethermindEth/evm20-verification) using the [K Framework](https://kframework.org/) by Nethermind and is proven to behave correctly.
 
 ## Dispatcher
 
